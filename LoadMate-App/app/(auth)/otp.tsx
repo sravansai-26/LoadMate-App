@@ -7,11 +7,10 @@ import {
   Animated,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, Shield, RefreshCw } from 'lucide-react-native';
+import { ArrowLeft, Shield, RefreshCw, Info } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { authApi } from '../../utils/apiService';
 import { Button } from '@/components/Button';
@@ -61,52 +60,60 @@ export default function OtpScreen() {
   }, [otp]);
 
   const verifyOtp = async () => {
-  if (isVerifying) return;
+    if (isVerifying) return;
 
-  setIsVerifying(true);
-  setError(false);
-  setErrorMessage('');
-
-  try {
-    const response = await authApi.verifyOtp(phone, otp);
-
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-    await login(response.data.user, response.data.access_token);
-
-  } catch (err: any) {
-    if (err.response?.status === 202) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      router.push({ 
-        pathname: "/(auth)/complete-profile" as any, 
-        params: { phone } 
-      });
-    } else {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      setError(true);
-      setErrorMessage(err.response?.data?.detail || 'Invalid OTP. Please try again.');
-      setOtp('');
-    }
-  } finally {
-    setIsVerifying(false);
-  }
-};
-
- const handleResend = async () => {
-  if (resendTimer === 0) {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setResendTimer(30);
-    setOtp('');
+    setIsVerifying(true);
     setError(false);
     setErrorMessage('');
 
     try {
-      await authApi.requestOtp(phone);
-    } catch (err) {
-      console.error('Resend failed:', err);
+      const response = await authApi.verifyOtp(phone, otp);
+
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+
+      await login(response.data.user, response.data.access_token);
+
+    } catch (err: any) {
+      if (err.response?.status === 202) {
+        if (Platform.OS !== 'web') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        }
+        router.push({ 
+          pathname: "/(auth)/complete-profile" as any, 
+          params: { phone } 
+        });
+      } else {
+        if (Platform.OS !== 'web') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        }
+        setError(true);
+        setErrorMessage(err.response?.data?.detail || 'Invalid OTP. Please try again.');
+        setOtp('');
+      }
+    } finally {
+      setIsVerifying(false);
     }
-  }
-};
+  };
+
+  const handleResend = async () => {
+    if (resendTimer === 0) {
+      if (Platform.OS !== 'web') {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+      setResendTimer(30);
+      setOtp('');
+      setError(false);
+      setErrorMessage('');
+
+      try {
+        await authApi.requestOtp(phone);
+      } catch (err) {
+        console.error('Resend failed:', err);
+      }
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -175,9 +182,20 @@ export default function OtpScreen() {
             </Text>
           </TouchableOpacity>
 
-          <View style={styles.helpContainer}>
-            <Text style={styles.helpText}>
-              Check your backend terminal for the 6-digit code.
+          {/* NEW STRATEGIC PROTOTYPE NOTICE BANNER */}
+          <View style={styles.prototypeCard}>
+            <View style={styles.cardHeader}>
+              <Info size={16} color="#1e40af" />
+              <Text style={styles.cardTitle}>Prototype / Review Mode</Text>
+            </View>
+            <Text style={styles.cardText}>
+              Smart LoadMate is currently running in a sandbox environment backed by static mock data profiles.
+            </Text>
+            <Text style={styles.bypassText}>
+              To sign in instantly, type the bypass code: <Text style={styles.boldOtp}>123456</Text>
+            </Text>
+            <Text style={styles.cardFooter}>
+              *Live dynamic production mapping and active SMS modules will follow in future rollout phases.
             </Text>
           </View>
         </Animated.View>
@@ -256,7 +274,7 @@ const styles = StyleSheet.create({
   },
   verifyButton: {
     marginTop: 8,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   resendContainer: {
     flexDirection: 'row',
@@ -264,6 +282,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     padding: 12,
+    marginBottom: 16,
   },
   resendText: {
     fontSize: 14,
@@ -273,16 +292,50 @@ const styles = StyleSheet.create({
   resendTextDisabled: {
     color: Colors.textTertiary,
   },
-  helpContainer: {
+  prototypeCard: {
     marginTop: 'auto',
+    backgroundColor: '#eff6ff', 
+    borderColor: '#bfdbfe',     
+    borderWidth: 1,
+    borderRadius: 14,
     padding: 16,
-    backgroundColor: Colors.infoLight,
-    borderRadius: 12,
-    marginBottom: 24,
+    marginBottom: Platform.OS === 'web' ? 24 : 10,
   },
-  helpText: {
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+  },
+  cardTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1e40af', 
+  },
+  cardText: {
+    fontSize: 12,
+    color: '#1e3a8a',
+    lineHeight: 17,
+  },
+  bypassText: {
+    fontSize: 12,
+    color: '#1e3a8a',
+    marginTop: 6,
+    fontWeight: '600',
+  },
+  boldOtp: {
+    color: '#dc2626', 
     fontSize: 13,
-    color: Colors.info,
-    textAlign: 'center',
+    fontWeight: '800',
+    backgroundColor: '#fee2e2',
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 4,
+  },
+  cardFooter: {
+    fontSize: 10,
+    color: '#64748b', 
+    fontStyle: 'italic',
+    marginTop: 8,
   },
 });
