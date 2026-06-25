@@ -1,14 +1,14 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = "https://mercilessly-uncognizant-dewey.ngrok-free.dev";
+// Your new permanent cloud backend URL
+const BASE_URL = "https://smart-loadmate-backend.onrender.com";
 
 const api = axios.create({
   baseURL: BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
-    'ngrok-skip-browser-warning': 'true',
   },
 });
 
