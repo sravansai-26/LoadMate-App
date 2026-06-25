@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "rork-app",
+    "scheme": "loadmate-app",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
 
@@ -17,7 +17,7 @@
 
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "app.rork.loadmate-logistics"
+      "bundleIdentifier": "com.loadmate.logistics"
     },
 
     "android": {
@@ -26,7 +26,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.loadmate_logistics",
+      "package": "com.loadmate.logistics",
       "config": {
         "googleMaps": {
           "apiKey": "PASTE_YOUR_GOOGLE_MAPS_API_KEY_HERE"
@@ -35,14 +35,14 @@
     },
 
     "web": {
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.ico"
     },
 
     "plugins": [
       [
         "expo-router",
         {
-          "origin": "https://rork.com/"
+          "origin": "https://smart-loadmate-backend.onrender.com/"
         }
       ],
       "expo-font",
